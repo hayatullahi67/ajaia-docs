@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Neon: the app uses the pooled URL; migrations need a direct connection.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String          @id
+  email     String          @unique
+  name      String
+  createdAt DateTime        @default(now())
+  documents Document[]
+  shares    DocumentShare[]
+}
+
+model Document {
+  id        String          @id @default(cuid())
+  title     String          @default("Untitled document")
+  // Stored as HTML produced by the Tiptap editor. Keeps formatting and is
+  // easy to re-load into the editor or export later.
+  content   String          @default("")
+  ownerId   String
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shares    DocumentShare[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([ownerId])
+}
+
+model DocumentShare {
+  id         String   @id @default(cuid())
+  documentId String
+  userId     String
+  // "viewer" can read, "editor" can read and edit. Only the owner can share.
+  role       String   @default("editor")
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, userId])
+  @@index([userId])
+}

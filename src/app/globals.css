@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Everything else is Tailwind utilities. These two rules target markup that
+   Tiptap generates, which we can't put classes on. */
+
+/* Placeholder text on an empty document (Tiptap's documented approach). */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--color-slate-400);
+}
+
+/* The typography plugin adds quote marks to blockquotes; a doc editor shouldn't. */
+.ProseMirror blockquote p::before,
+.ProseMirror blockquote p::after {
+  content: none;
+}
